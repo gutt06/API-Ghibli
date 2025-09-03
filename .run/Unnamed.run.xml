@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Unnamed" type="QuarkusMavenBridge">
+    <option name="jreName" value="23" />
+    <option name="profiles" />
+    <option name="vmOptions" />
+    <option name="workingDir" value="$PROJECT_DIR$" />
+    <method v="2" />
+  </configuration>
+</component>

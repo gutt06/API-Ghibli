@@ -9,3 +9,8 @@ insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) val
 insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(2, 'Harry Potter', 'JK Rolling', 'Editora Livro', 2011, false);
 insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(3, 'Diario Indestrutivel', 'Agata Runin', 'Studio Par', 2021, true);
 insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(4, 'Capitao America', 'Stuart Rom', 'Marvel', 1999, false);
+
+insert into movie (id, titulo, autor, anoLancamento, nota) values(1, 'A viagem de Chihiro', 'Miyazaki', 2003, 10);
+insert into movie (id, titulo, autor, anoLancamento, nota) values(2, 'Meu vizinho Totoro', 'Miyazaki', 1999, 9.3);
+insert into movie (id, titulo, autor, anoLancamento, nota) values(3, 'O castelo animado', 'Miyazaki', 2006, 9.5);
+insert into movie (id, titulo, autor, anoLancamento, nota) values(4, 'O servico de entregas da Kiki', 'Miyazaki', 1995, 8.4);

@@ -6,6 +6,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Path("/books") // é utilizando este @path que indica que esta classe está relacionada a rotas da API
@@ -58,9 +59,16 @@ public class BookResource {
 
         var query = (q == null || q.isBlank() ? Book.findAll(sortObj) : Book.find("lower(titulo) like ?1 or lower(autor) like ?1", sortObj, "%" + q.toLowerCase() + "%"));
 
-        var books = query.page(effectivePage, size).list();
+        List<Book> books = query.page(effectivePage, size).list();
 
-        return Response.ok(books).build();
+        var response = new SearchBookResponse();
+        response.Books = books;
+        response.TotalBooks = query.list().size();
+        response.TotalPages = query.pageCount();
+        response.HasMore = query.pageCount() > page;
+        response.NextPage = response.HasMore ? "http://localhost:8080/books/search?q="+q+"&page="+(page + 1) : "";
+
+        return Response.ok(response).build();
     };
 
     @POST // não é necessário um path pois temos apenas um post

@@ -4,6 +4,13 @@ import io.quarkus.panache.common.Sort;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,13 +20,27 @@ import java.util.Set;
 public class BookResource {
 
     @GET
+    @Operation( // Dando uma descrição no nosso swagger sobre o que faz a rota
+        summary = "Retorna todos os livros (getAll)",
+        description = "Retorna uma lista de livros por padrão no formato JSON"
+    )
+    @APIResponse( // Detalha algumas coisas na parte de responses no swagger
+        responseCode = "200",
+        description = "Retornado a lista corretamente",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = Book.class, type = SchemaType.ARRAY) // O implementation é a classe especifica que estou utilizando e o tipo é um arraylist class
+        )
+    )
     public Response getAll(){
         return Response.ok(Book.listAll()).build(); // index que retorna todos os livros cadastrados, por isso não possui um path
     }
 
     @GET
     @Path("{id}") // pois ja temos um @get, então precisamos de um path para diferenciar
-    public Response getById(@PathParam("id") int id){
+    public Response getById(
+            @Parameter(description = "Id do livro a ser pesquisado", required = true)
+            @PathParam("id") int id){
         Book entity = Book.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -37,12 +58,21 @@ public class BookResource {
     //}
 
     @GET
+    @Operation( // Dando uma descrição no nosso swagger sobre o que faz a rota
+            summary = "Retorna os livros conforme o sistema de pesquisa (search)",
+            description = "Retorna uma lista de livros filtrada conforme a pesquisa por padrão no formato JSON"
+    )
     @Path("/search")
     public Response search(
+            @Parameter(description = "Query de buscar por titulo ou autor ou editora")
             @QueryParam("q") String q,
+            @Parameter(description = "Campo de ordenacao da lista de retorno")
             @QueryParam("sort") @DefaultValue("id") String sort,
+            @Parameter(description = "Esquema de filtragem por ordem crescente ou decrescente")
             @QueryParam("direction") @DefaultValue("asc") String direction,
+            @Parameter(description = "Define qual página será retornada na response")
             @QueryParam("page") @DefaultValue("0") int page,
+            @Parameter(description = "Define quantos objetos irão ser retornados por query")
             @QueryParam("size") @DefaultValue("10") int size
     ){
         Set<String> allowed = Set.of("id", "titulo", "autor", "editora", "anoLancamento", "estaDisponivel");
@@ -65,13 +95,34 @@ public class BookResource {
         response.Books = books;
         response.TotalBooks = query.list().size();
         response.TotalPages = query.pageCount();
-        response.HasMore = query.pageCount() > page;
-        response.NextPage = response.HasMore ? "http://localhost:8080/books/search?q="+q+"&page="+(page + 1) : "";
+        response.HasMore = page < query.pageCount();
+        response.NextPage = response.HasMore ? "http://localhost:8080/books/search?q="+q+"&page="+(page + 1) + (size >  0 ? "&size="+size : "") : "";
 
         return Response.ok(response).build();
     };
 
     @POST // não é necessário um path pois temos apenas um post
+    @RequestBody( // Explica o esquema da requisão
+            required = true,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = Book.class)
+            )
+    )
+    @APIResponse( // Requisição 201
+        responseCode = "201",
+        description = "Created",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = Book.class))
+    )
+    @APIResponse( // Requisição
+        responseCode = "400",
+        description = "Bad Request",
+        content = @Content(
+            mediaType = "text/plain",
+            schema = @Schema(implementation = String.class))
+    )
     @Transactional
     public Response insert(Book book){
         Book.persist(book);

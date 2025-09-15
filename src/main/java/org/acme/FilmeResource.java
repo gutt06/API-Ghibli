@@ -38,9 +38,28 @@ public class FilmeResource {
 
     @GET
     @Path("{id}") // Temos 2 possiveis responses um achou e o outro nao encontrado not found
+    @Operation(
+        summary = "Retorna um filme pela busca por ID (getById)",
+        description = "Retorna um filme específico pela busca de ID colocado na URL no formato JSON por padrão"
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Item retornado com sucesso",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
+            )
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "Item não encontrado",
+            content = @Content(
+                    mediaType = "text/plain",
+                    schema = @Schema(implementation = String.class))
+    )
     public Response getById(
             @Parameter(description = "Id do filme a ser pesquisado", required = true)
-            @PathParam("id") int id){
+            @PathParam("id") long id){
         Filme entity = Filme.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -52,6 +71,14 @@ public class FilmeResource {
     @Operation(
             summary = "Retorna os filmes conforme o sistema de pesquisa (search)",
             description = "Retorna uma lista de filmes filtrada conforme a pesquisa por padrão no formato JSON"
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Item retornado com sucesso",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
+            )
     )
     @Path("/search") // Temos uma response do tipo ok 200
     public Response search(
@@ -76,7 +103,7 @@ public class FilmeResource {
                 "desc".equalsIgnoreCase(direction) ? Sort.Direction.Descending : Sort.Direction.Ascending
         );
 
-        int effectivePage = page <= 1 ? 0 : page - 1;
+        int effectivePage = Math.max(page, 0);
 
         PanacheQuery<Filme> query;
 
@@ -110,13 +137,17 @@ public class FilmeResource {
         response.Filmes = filmes;
         response.TotalFilmes = query.list().size();
         response.TotalPages = query.pageCount();
-        response.HasMore = page < query.pageCount();
-        response.NextPage = response.HasMore ? "http://localhost:8080/filmes/search?q="+q+"&page="+(page + 1) + (size > 0 ? "&size="+size : "") : "";
+        response.HasMore = effectivePage < query.pageCount() - 1; // Faz o pagecount - 1 pois a pagina 1 seria o indice 0, a comparação é feita com o índice da última página valida
+        response.NextPage = response.HasMore ? "http://localhost:8080/filmes/search?q="+(q != null ? q : "")+"&page="+(effectivePage + 1) + (size > 0 ? "&size="+size : "") : "";
 
         return Response.ok(response).build();
     }
 
-    @POST // Temos 2 tipos de response um 201 created e um 400 bad request
+    @POST
+    @Operation(
+            summary = "Adiciona um registro a lista de filmes (insert)",
+            description = "Adiciona um item a lista de filmes por meio de POST e request body JSON"
+    )
     @RequestBody(
             required = true,
             content = @Content(
@@ -145,9 +176,27 @@ public class FilmeResource {
     }
 
     @DELETE
+    @Operation(
+            summary = "Remove um registro da lista de filmes (delete)",
+            description = "Remove um item da lista de filmes por meio de Id na URL"
+    )
+    @APIResponse(
+            responseCode = "204",
+            description = "Sem conteúdo",
+            content = @Content(
+                    mediaType = "text/plain",
+                    schema = @Schema(implementation = String.class))
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "Item não encontrado",
+            content = @Content(
+                    mediaType = "text/plain",
+                    schema = @Schema(implementation = String.class))
+    )
     @Transactional
-    @Path("{id}") // Temos 2 responses uma de not found e outra de no content
-    public Response delete(@PathParam("id") int id){
+    @Path("{id}")
+    public Response delete(@PathParam("id") long id){
         Filme entity = Filme.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -157,9 +206,35 @@ public class FilmeResource {
     }
 
     @PUT
+    @Operation(
+            summary = "Altera um registro da lista de filmes (update)",
+            description = "Edita um item da lista de filmes por meio de Id na URL e request body JSON"
+    )
+    @RequestBody(
+            required = true,
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Filme.class)
+            )
+    )
+    @APIResponse(
+            responseCode = "200",
+            description = "Item editado com sucesso",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
+            )
+    )
+    @APIResponse(
+            responseCode = "404",
+            description = "Item não encontrado",
+            content = @Content(
+                    mediaType = "text/plain",
+                    schema = @Schema(implementation = String.class))
+    )
     @Transactional
     @Path("{id}") // Temos 2 responses uma de not found e outra de ok
-    public Response update(@PathParam("id") int id, Filme newFilme){
+    public Response update(@PathParam("id") long id, Filme newFilme){
         Filme entity = Filme.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();

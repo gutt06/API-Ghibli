@@ -15,7 +15,7 @@ insert into movie (id, titulo, autor, anoLancamento, nota) values(2, 'Meu vizinh
 insert into movie (id, titulo, autor, anoLancamento, nota) values(3, 'O castelo animado', 'Miyazaki', 2006, 9.5);
 insert into movie (id, titulo, autor, anoLancamento, nota) values(4, 'O servico de entregas da Kiki', 'Miyazaki', 1995, 8.4);
 
-insert into filme (id, titulo, sinopse, anoLancamento, nota, idadeIndicativa) values(1, 'A viagem de Chihiro', 'Chihiro sinopse', 2010, 9.5, 12);
-insert into filme (id, titulo, sinopse, anoLancamento, nota, idadeIndicativa) values(2, 'Meu vizinho Totoro', 'Totoro sinopse', 1999, 9, 0);
-insert into filme (id, titulo, sinopse, anoLancamento, nota, idadeIndicativa) values(3, 'O castelo animado', 'Castelo animado sinopse', 2014, 8.7, 14);
-insert into filme (id, titulo, sinopse, anoLancamento, nota, idadeIndicativa) values(4, 'O servico de entregas da Kiki', 'Kiki sinopse', 1990, 8, 0);
+insert into filme (titulo, sinopse, anoLancamento, nota, idadeIndicativa) values('A viagem de Chihiro', 'Chihiro sinopse', 2010, 9.5, 12);
+insert into filme (titulo, sinopse, anoLancamento, nota, idadeIndicativa) values('Meu vizinho Totoro', 'Totoro sinopse', 1999, 9, 0);
+insert into filme (titulo, sinopse, anoLancamento, nota, idadeIndicativa) values('O castelo animado', 'Castelo animado sinopse', 2014, 8.7, 14);
+insert into filme (titulo, sinopse, anoLancamento, nota, idadeIndicativa) values('O servico de entregas da Kiki', 'Kiki sinopse', 1990, 8, 0);

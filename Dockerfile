@@ -8,7 +8,7 @@ WORKDIR /app
 # Copy local code to the container image.
 COPY . ./
 
-chmod +x mvnw
+RUN chmod +x mvnw
 
 # Build the app.
 RUN ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean dependency:list install

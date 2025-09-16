@@ -16,38 +16,37 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import java.util.List;
 import java.util.Set;
 
-@Path("/filmes")
-public class FilmeResource {
-
+@Path("/diretores")
+public class DiretorResource {
     @GET
     @Operation(
-            summary = "Retorna todos os filmes (getAll)",
-            description = "Retorna uma lista de filmes por padrão no formato JSON"
+            summary = "Retorna todos os diretores (getAll)",
+            description = "Retorna uma lista de diretores por padrão no formato JSON"
     )
     @APIResponse(
             responseCode = "200",
             description = "Lista retornada com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Diretor.class, type = SchemaType.ARRAY)
             )
     )
     public Response getAll(){
-        return Response.ok(Filme.listAll()).build();
+        return Response.ok(Diretor.listAll()).build();
     }
 
     @GET
     @Path("{id}")
     @Operation(
-        summary = "Retorna um filme pela busca por ID (getById)",
-        description = "Retorna um filme específico pela busca de ID colocado na URL no formato JSON por padrão"
+            summary = "Retorna um diretor pela busca por ID (getById)",
+            description = "Retorna um diretor específico pela busca de ID colocado na URL no formato JSON por padrão"
     )
     @APIResponse(
             responseCode = "200",
             description = "Item retornado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Diretor.class, type = SchemaType.ARRAY)
             )
     )
     @APIResponse(
@@ -58,9 +57,9 @@ public class FilmeResource {
                     schema = @Schema(implementation = String.class))
     )
     public Response getById(
-            @Parameter(description = "Id do filme a ser pesquisado", required = true)
+            @Parameter(description = "Id do diretor a ser pesquisado", required = true)
             @PathParam("id") long id){
-        Filme entity = Filme.findById(id);
+        Diretor entity = Diretor.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -69,31 +68,31 @@ public class FilmeResource {
 
     @GET
     @Operation(
-            summary = "Retorna os filmes conforme o sistema de pesquisa (search)",
-            description = "Retorna uma lista de filmes filtrada conforme a pesquisa por padrão no formato JSON"
+            summary = "Retorna os diretores conforme o sistema de pesquisa (search)",
+            description = "Retorna uma lista de diretores filtrada conforme a pesquisa por padrão no formato JSON"
     )
     @APIResponse(
             responseCode = "200",
             description = "Item retornado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Diretor.class, type = SchemaType.ARRAY)
             )
     )
     @Path("/search")
     public Response search(
-            @Parameter(description = "Query de buscar por titulo, ano de lançamento ou idade indicativa")
+            @Parameter(description = "Query de buscar por nome ou filme")
             @QueryParam("q") String q,
             @Parameter(description = "Campo de ordenação da lista de retorno")
             @QueryParam("sort") @DefaultValue("id") String sort,
-            @Parameter(description = "Esquema de filtragem de filmes por ordem crescente ou decrescente")
+            @Parameter(description = "Esquema de filtragem de diretores por ordem crescente ou decrescente")
             @QueryParam("direction") @DefaultValue("asc") String direction,
             @Parameter(description = "Define qual página será retornada na response")
             @QueryParam("page") @DefaultValue("0") int page,
             @Parameter(description = "Define quantos objetos serão retornados por query")
             @QueryParam("size") @DefaultValue("4") int size
     ){
-        Set<String> allowed = Set.of("id", "titulo", "sinopse", "anoLancamento", "nota", "idadeIndicativa");
+        Set<String> allowed = Set.of("id", "nome", "nascimento", "nacionalidade", "biografia", "filme");
         if(!allowed.contains(sort)){
             sort = "id";
         }
@@ -105,54 +104,37 @@ public class FilmeResource {
 
         int effectivePage = Math.max(page, 0);
 
-        PanacheQuery<Filme> query;
+        PanacheQuery<Diretor> query;
 
         if (q == null || q.isBlank()) {
-            query = Filme.findAll(sortObj);
+            query = Diretor.findAll(sortObj);
         } else {
-            try {
-                // tenta converter a pesquisa em número
-                int numero = Integer.parseInt(q);
-
-                // busca apenas em campos numéricos
-                query = Filme.find(
-                        "anoLancamento = ?1 or idadeIndicativa = ?1",
-                        sortObj,
-                        numero
-                );
-
-            } catch (NumberFormatException e) {
-                // se não for número, busca só em campos textuais
-                query = Filme.find(
-                        "lower(titulo) like ?1",
-                        sortObj,
-                        "%" + q.toLowerCase() + "%"
-                );
-            }
+            query = Diretor.find(
+                    "lower(nome) like ?1 or lower(filme) like ?1", sortObj, "%" + q.toLowerCase() + "%");
         }
 
-        List<Filme> filmes = query.page(effectivePage, size).list();
+        List<Diretor> diretores = query.page(effectivePage, size).list();
 
-        var response = new SearchFilmeResponse();
-        response.Filmes = filmes;
-        response.TotalFilmes = query.list().size();
+        var response = new SearchDiretorResponse();
+        response.Diretores = diretores;
+        response.TotalDiretores = query.list().size();
         response.TotalPages = query.pageCount();
         response.HasMore = effectivePage < query.pageCount() - 1; // Faz o pagecount - 1 pois a pagina 1 seria o indice 0, a comparação é feita com o índice da última página valida
-        response.NextPage = response.HasMore ? "http://localhost:8080/filmes/search?q="+(q != null ? q : "")+"&page="+(effectivePage + 1) + (size > 0 ? "&size="+size : "") : "";
+        response.NextPage = response.HasMore ? "http://localhost:8080/diretores/search?q="+(q != null ? q : "")+"&page="+(effectivePage + 1) + (size > 0 ? "&size="+size : "") : "";
 
         return Response.ok(response).build();
     }
 
     @POST
     @Operation(
-            summary = "Adiciona um registro a lista de filmes (insert)",
-            description = "Adiciona um item a lista de filmes por meio de POST e request body JSON"
+            summary = "Adiciona um registro a lista de diretores (insert)",
+            description = "Adiciona um item a lista de diretores por meio de POST e request body JSON"
     )
     @RequestBody(
             required = true,
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Filme.class)
+                    schema = @Schema(implementation = Diretor.class)
             )
     )
     @APIResponse(
@@ -160,7 +142,7 @@ public class FilmeResource {
             description = "Created",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Filme.class))
+                    schema = @Schema(implementation = Diretor.class))
     )
     @APIResponse(
             responseCode = "400",
@@ -170,15 +152,15 @@ public class FilmeResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
-    public Response insert(Filme filme){
-        Filme.persist(filme);
+    public Response insert(Diretor diretor){
+        Diretor.persist(diretor);
         return Response.status(Response.Status.CREATED).build();
     }
 
     @DELETE
     @Operation(
-            summary = "Remove um registro da lista de filmes (delete)",
-            description = "Remove um item da lista de filmes por meio de Id na URL"
+            summary = "Remove um registro da lista de diretores (delete)",
+            description = "Remove um item da lista de diretores por meio de Id na URL"
     )
     @APIResponse(
             responseCode = "204",
@@ -197,24 +179,24 @@ public class FilmeResource {
     @Transactional
     @Path("{id}")
     public Response delete(@PathParam("id") long id){
-        Filme entity = Filme.findById(id);
+        Diretor entity = Diretor.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        Filme.deleteById(id);
+        Diretor.deleteById(id);
         return Response.noContent().build();
     }
 
     @PUT
     @Operation(
-            summary = "Altera um registro da lista de filmes (update)",
-            description = "Edita um item da lista de filmes por meio de Id na URL e request body JSON"
+            summary = "Altera um registro da lista de diretores (update)",
+            description = "Edita um item da lista de diretores por meio de Id na URL e request body JSON"
     )
     @RequestBody(
             required = true,
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Filme.class)
+                    schema = @Schema(implementation = Diretor.class)
             )
     )
     @APIResponse(
@@ -222,7 +204,7 @@ public class FilmeResource {
             description = "Item editado com sucesso",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
+                    schema = @Schema(implementation = Diretor.class, type = SchemaType.ARRAY)
             )
     )
     @APIResponse(
@@ -234,16 +216,16 @@ public class FilmeResource {
     )
     @Transactional
     @Path("{id}")
-    public Response update(@PathParam("id") long id, Filme newFilme){
-        Filme entity = Filme.findById(id);
+    public Response update(@PathParam("id") long id, Diretor newDiretor){
+        Diretor entity = Diretor.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        entity.titulo = newFilme.titulo;
-        entity.sinopse = newFilme.sinopse;
-        entity.anoLancamento = newFilme.anoLancamento;
-        entity.nota = newFilme.nota;
-        entity.idadeIndicativa = newFilme.idadeIndicativa;
+        entity.nome = newDiretor.nome;
+        entity.nascimento = newDiretor.nascimento;
+        entity.nacionalidade = newDiretor.nacionalidade;
+        entity.biografia = newDiretor.biografia;
+        entity.filme = newDiretor.filme;
 
         return Response.status(Response.Status.OK).entity(entity).build();
     }

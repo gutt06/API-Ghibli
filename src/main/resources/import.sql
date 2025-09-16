@@ -19,3 +19,8 @@ insert into filme (titulo, sinopse, anoLancamento, nota, idadeIndicativa) values
 insert into filme (titulo, sinopse, anoLancamento, nota, idadeIndicativa) values('Meu vizinho Totoro', 'Totoro sinopse', 1999, 9, 0);
 insert into filme (titulo, sinopse, anoLancamento, nota, idadeIndicativa) values('O castelo animado', 'Castelo animado sinopse', 2014, 8.7, 14);
 insert into filme (titulo, sinopse, anoLancamento, nota, idadeIndicativa) values('O servico de entregas da Kiki', 'Kiki sinopse', 1990, 8, 0);
+
+insert into diretor (nome, nascimento, nacionalidade, biografia, filme) values('Miyazaki', '14/03/1940', 'Japones', 'Miyazaki biografia', 'Castelo animado');
+insert into diretor (nome, nascimento, nacionalidade, biografia, filme) values('Lucas', '23/09/1970', 'Estado Unidense', 'Lucas biografia', 'A viagem de Chihiro');
+insert into diretor (nome, nascimento, nacionalidade, biografia, filme) values('Takashi', '03/06/1987', 'Japones', 'Takashi biografia', 'O servico de entregas da Kiki');
+insert into diretor (nome, nascimento, nacionalidade, biografia, filme) values('Philip', '17/02/1999', 'Canadense', 'Philip biografia', 'Meu vizinho totoro');

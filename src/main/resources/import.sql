@@ -24,3 +24,7 @@ insert into diretor (nome, nascimento, nacionalidade, biografia, filme) values('
 insert into diretor (nome, nascimento, nacionalidade, biografia, filme) values('Lucas', '23/09/1970', 'Estado Unidense', 'Lucas biografia', 'A viagem de Chihiro');
 insert into diretor (nome, nascimento, nacionalidade, biografia, filme) values('Takashi', '03/06/1987', 'Japones', 'Takashi biografia', 'O servico de entregas da Kiki');
 insert into diretor (nome, nascimento, nacionalidade, biografia, filme) values('Philip', '17/02/1999', 'Canadense', 'Philip biografia', 'Meu vizinho totoro');
+
+insert into genero (nome, descricao) values('Fantasia', 'Filmes fantasiosos');
+insert into genero (nome, descricao) values('Aventura', 'Filmes de aventura');
+insert into genero (nome, descricao) values('Familia', 'Filmes para a familia');

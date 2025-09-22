@@ -3,6 +3,7 @@ package org.acme;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -13,6 +14,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -111,10 +113,10 @@ public class FilmeResource {
             query = Filme.findAll(sortObj);
         } else {
             try {
-                // tenta converter a pesquisa em número
+                // Tenta converter a pesquisa em número
                 int numero = Integer.parseInt(q);
 
-                // busca apenas em campos numéricos
+                // Busca apenas em campos numéricos
                 query = Filme.find(
                         "anoLancamento = ?1 or idadeIndicativa = ?1",
                         sortObj,
@@ -170,7 +172,39 @@ public class FilmeResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
-    public Response insert(Filme filme){
+    public Response insert(@Valid Filme filme){
+
+        // Resolver diretor (pode ter apenas id)
+        if(filme.diretor != null && filme.diretor.id != null){
+            Diretor d = Diretor.findById(filme.diretor.id);
+            if(d == null){
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Diretor com id " + filme.diretor.id + " não existe").build();
+            }
+            filme.diretor = d;
+        } else {
+            filme.diretor = null;
+        }
+
+        // Resolver generos (se vierem com id)
+        if(filme.generos != null && !filme.generos.isEmpty()){
+            Set<Genero> resolved = new HashSet<>();
+            for(Genero g : filme.generos){
+                if(g == null || g.id == 0){
+                    continue;
+                }
+                Genero fetched = Genero.findById(g.id);
+                if(fetched == null){
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity("Genero com id " + g.id + " não existe").build();
+                }
+                resolved.add(fetched);
+            }
+            filme.generos = resolved;
+        } else {
+            filme.generos = new HashSet<>();
+        }
+
         Filme.persist(filme);
         return Response.status(Response.Status.CREATED).build();
     }
@@ -201,6 +235,11 @@ public class FilmeResource {
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+
+        // Remove associações ManyToMany antes de deletar
+        entity.generos.clear();
+        entity.persist(); // atualiza o estado
+
         Filme.deleteById(id);
         return Response.noContent().build();
     }
@@ -244,6 +283,35 @@ public class FilmeResource {
         entity.anoLancamento = newFilme.anoLancamento;
         entity.nota = newFilme.nota;
         entity.idadeIndicativa = newFilme.idadeIndicativa;
+
+        // Resolver diretor
+        if(newFilme.diretor != null && newFilme.diretor.id != null){
+            Diretor d = Diretor.findById(newFilme.diretor.id);
+            if(d == null){
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Diretor com id " + newFilme.diretor.id + " não existe").build();
+            }
+            entity.diretor = d;
+        } else {
+            entity.diretor = null;
+        }
+
+        // Resolver generos
+        if(newFilme.generos != null){
+            Set<Genero> resolved = new HashSet<>();
+            for(Genero g : newFilme.generos){
+                if(g == null || g.id == 0) continue;
+                Genero fetched = Genero.findById(g.id);
+                if(fetched == null){
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity("Genero com id " + g.id + " não existe").build();
+                }
+                resolved.add(fetched);
+            }
+            entity.generos = resolved;
+        } else {
+            entity.generos = new HashSet<>();
+        }
 
         return Response.status(Response.Status.OK).entity(entity).build();
     }

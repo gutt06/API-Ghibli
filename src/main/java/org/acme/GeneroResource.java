@@ -3,6 +3,7 @@ package org.acme;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -152,7 +153,7 @@ public class GeneroResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
-    public Response insert(Genero genero){
+    public Response insert(@Valid Genero genero){
         Genero.persist(genero);
         return Response.status(Response.Status.CREATED).build();
     }
@@ -176,6 +177,13 @@ public class GeneroResource {
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
     )
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflito - Gênero possui filmes vinculados",
+            content = @Content(
+                    mediaType = "text/plain",
+                    schema = @Schema(implementation = String.class))
+    )
     @Transactional
     @Path("{id}")
     public Response delete(@PathParam("id") long id){
@@ -183,6 +191,14 @@ public class GeneroResource {
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+
+        long filmesVinculados = Filme.count("?1 MEMBER OF generos", entity);
+        if(filmesVinculados > 0){
+            return Response.status(Response.Status.CONFLICT)
+                    .entity("Não é possível deletar genero. Existem " + filmesVinculados + " filme(s) vinculado(s).")
+                    .build();
+        }
+
         Genero.deleteById(id);
         return Response.noContent().build();
     }
@@ -216,7 +232,7 @@ public class GeneroResource {
     )
     @Transactional
     @Path("{id}")
-    public Response update(@PathParam("id") long id, Genero newGenero){
+    public Response update(@PathParam("id") long id,@Valid Genero newGenero){
         Genero entity = Genero.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();

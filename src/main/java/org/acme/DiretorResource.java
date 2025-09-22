@@ -3,6 +3,7 @@ package org.acme;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -81,7 +82,7 @@ public class DiretorResource {
     )
     @Path("/search")
     public Response search(
-            @Parameter(description = "Query de buscar por nome ou filme")
+            @Parameter(description = "Query de buscar por nome ou nacionalidade")
             @QueryParam("q") String q,
             @Parameter(description = "Campo de ordenação da lista de retorno")
             @QueryParam("sort") @DefaultValue("id") String sort,
@@ -92,7 +93,7 @@ public class DiretorResource {
             @Parameter(description = "Define quantos objetos serão retornados por query")
             @QueryParam("size") @DefaultValue("4") int size
     ){
-        Set<String> allowed = Set.of("id", "nome", "nascimento", "nacionalidade", "biografia", "filme");
+        Set<String> allowed = Set.of("id", "nome", "nascimento", "nacionalidade", "biografia");
         if(!allowed.contains(sort)){
             sort = "id";
         }
@@ -110,7 +111,7 @@ public class DiretorResource {
             query = Diretor.findAll(sortObj);
         } else {
             query = Diretor.find(
-                    "lower(nome) like ?1 or lower(filme) like ?1", sortObj, "%" + q.toLowerCase() + "%");
+                    "lower(nome) like ?1 or lower(nacionalidade) like ?1", sortObj, "%" + q.toLowerCase() + "%");
         }
 
         List<Diretor> diretores = query.page(effectivePage, size).list();
@@ -152,7 +153,7 @@ public class DiretorResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
-    public Response insert(Diretor diretor){
+    public Response insert(@Valid Diretor diretor){
         Diretor.persist(diretor);
         return Response.status(Response.Status.CREATED).build();
     }
@@ -176,6 +177,13 @@ public class DiretorResource {
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
     )
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflito - Diretor possui filmes vinculados",
+            content = @Content(
+                    mediaType = "text/plain",
+                    schema = @Schema(implementation = String.class))
+    )
     @Transactional
     @Path("{id}")
     public Response delete(@PathParam("id") long id){
@@ -183,6 +191,14 @@ public class DiretorResource {
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+
+        long filmesVinculados = Filme.count("diretor.id = ?1", id);
+        if(filmesVinculados > 0){
+            return Response.status(Response.Status.CONFLICT)
+                    .entity("Não é possível deletar diretor. Existem " + filmesVinculados + " filme(s) vinculado(s).")
+                    .build();
+        }
+
         Diretor.deleteById(id);
         return Response.noContent().build();
     }
@@ -216,7 +232,7 @@ public class DiretorResource {
     )
     @Transactional
     @Path("{id}")
-    public Response update(@PathParam("id") long id, Diretor newDiretor){
+    public Response update(@PathParam("id") long id, @Valid Diretor newDiretor){
         Diretor entity = Diretor.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -225,7 +241,6 @@ public class DiretorResource {
         entity.nascimento = newDiretor.nascimento;
         entity.nacionalidade = newDiretor.nacionalidade;
         entity.biografia = newDiretor.biografia;
-        entity.filme = newDiretor.filme;
 
         return Response.status(Response.Status.OK).entity(entity).build();
     }

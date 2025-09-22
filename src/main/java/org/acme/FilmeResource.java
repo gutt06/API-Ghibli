@@ -273,7 +273,7 @@ public class FilmeResource {
     )
     @Transactional
     @Path("{id}")
-    public Response update(@PathParam("id") long id, Filme newFilme){
+    public Response update(@PathParam("id") long id,@Valid Filme newFilme){
         Filme entity = Filme.findById(id);
         if(entity == null){
             return Response.status(Response.Status.NOT_FOUND).build();

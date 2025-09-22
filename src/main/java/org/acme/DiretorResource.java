@@ -93,7 +93,7 @@ public class DiretorResource {
             @Parameter(description = "Define quantos objetos serão retornados por query")
             @QueryParam("size") @DefaultValue("4") int size
     ){
-        Set<String> allowed = Set.of("id", "nome", "nascimento", "nacionalidade", "biografia");
+        Set<String> allowed = Set.of("id", "nome", "nascimento", "nacionalidade");
         if(!allowed.contains(sort)){
             sort = "id";
         }
@@ -240,7 +240,18 @@ public class DiretorResource {
         entity.nome = newDiretor.nome;
         entity.nascimento = newDiretor.nascimento;
         entity.nacionalidade = newDiretor.nacionalidade;
-        entity.biografia = newDiretor.biografia;
+        // Atualizar biografia (será criada automaticamente se não existir devido ao CascadeType.ALL)
+        if(newDiretor.biografia != null){
+            if(entity.biografia == null){
+                entity.biografia = new BiografiaDiretor();
+            }
+            entity.biografia.textoCompleto = newDiretor.biografia.textoCompleto;
+            entity.biografia.resumo = newDiretor.biografia.resumo;
+            entity.biografia.premiosRecebidos = newDiretor.biografia.premiosRecebidos;
+        } else {
+            // Se não vier biografia no request, limpa a biografia existente
+            entity.biografia = null;
+        }
 
         return Response.status(Response.Status.OK).entity(entity).build();
     }

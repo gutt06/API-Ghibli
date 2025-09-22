@@ -10,10 +10,34 @@ insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) val
 insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(3, 'Diario Indestrutivel', 'Agata Runin', 'Studio Par', 2021, true);
 insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(4, 'Capitao America', 'Stuart Rom', 'Marvel', 1999, false);
 
-insert into diretor (nome, nascimento, nacionalidade, biografia) values('Miyazaki', '1940-03-14', 'Japones', 'Miyazaki biografia');
-insert into diretor (nome, nascimento, nacionalidade, biografia) values('Lucas', '1970-09-23', 'Estado Unidense', 'Lucas biografia');
-insert into diretor (nome, nascimento, nacionalidade, biografia) values('Takashi', '1987-06-03', 'Japones', 'Takashi biografia');
-insert into diretor (nome, nascimento, nacionalidade, biografia) values('Philip', '1999-02-17', 'Canadense', 'Philip biografia');
+insert into BiografiaDiretor (textoCompleto, resumo, premiosRecebidos) values(
+    'Hayao Miyazaki é um dos mais renomados diretores de animação japoneses, conhecido mundialmente por suas obras que misturam fantasia, natureza e elementos culturais japoneses.',
+    'Diretor japonês de animação mundialmente reconhecido',
+    'Urso de Ouro, Oscar de Melhor Filme de Animação'
+);
+
+insert into BiografiaDiretor (textoCompleto, resumo, premiosRecebidos) values(
+    'George Lucas revolucionou o cinema com efeitos especiais digitais.',
+    'Diretor americano',
+    'Lifetime Achievement Award, Irving G. Thalberg Memorial Award'
+);
+
+insert into BiografiaDiretor (textoCompleto, resumo, premiosRecebidos) values(
+    'Takashi Miike é conhecido por sua filmografia prolífica e diversificada, explorando diversos gêneros cinematográficos.',
+    'Diretor japonês de cinema experimental',
+    'Diversos prêmios em festivais internacionais'
+);
+
+insert into BiografiaDiretor (textoCompleto, resumo, premiosRecebidos) values(
+    'Philip Kaufman é um diretor canadense conhecido por suas adaptações cinematográficas únicas.',
+    'Diretor canadense de adaptações literárias',
+    'Indicações ao Globo de Ouro'
+);
+
+insert into diretor (nome, nascimento, nacionalidade, biografia_id) values('Miyazaki', '1940-03-14', 'Japones', 1);
+insert into diretor (nome, nascimento, nacionalidade, biografia_id) values('Lucas', '1970-09-23', 'Estado Unidense', 2);
+insert into diretor (nome, nascimento, nacionalidade, biografia_id) values('Takashi', '1987-06-03', 'Japones', 3);
+insert into diretor (nome, nascimento, nacionalidade, biografia_id) values('Philip', '1999-02-17', 'Canadense', 4);
 
 insert into genero (nome, descricao) values('Fantasia', 'Filmes fantasiosos');
 insert into genero (nome, descricao) values('Aventura', 'Filmes de aventura');

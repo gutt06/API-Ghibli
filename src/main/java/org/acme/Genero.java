@@ -11,7 +11,7 @@ import java.util.Set;
 public class Genero extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public long id;
+    public Long id;
 
     @NotBlank(message = "O nome do gênero não pode ser vazio")
     @Size(min = 2, max = 50, message = "Nome do gênero deve ter entre 2 e 50 caracteres")

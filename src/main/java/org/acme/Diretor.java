@@ -25,8 +25,10 @@ public class Diretor extends PanacheEntityBase {
     @Size(max = 80)
     public String nacionalidade;
 
-    @Size(max = 500, message = "A biografia não pode ultrapassar 500 caracteres")
-    public String biografia;
+    // One-to-One: um diretor tem uma biografia
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "biografia_id")
+    public BiografiaDiretor biografia;
 
     // One-to-Many: um diretor pode ter vários filmes
     @OneToMany(mappedBy = "diretor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -35,7 +37,7 @@ public class Diretor extends PanacheEntityBase {
 
     public Diretor() {}
 
-    public Diretor(Long id, String nome, LocalDate nascimento, String nacionalidade, String biografia) {
+    public Diretor(Long id, String nome, LocalDate nascimento, String nacionalidade, BiografiaDiretor biografia) {
         this.id = id;
         this.nome = nome;
         this.nascimento = nascimento;

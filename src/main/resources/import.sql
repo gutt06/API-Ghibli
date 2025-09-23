@@ -5,11 +5,6 @@
 -- insert into myentity (id, field) values(3, 'field-3');
 -- alter sequence myentity_seq restart with 4;
 
-insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(1, 'Dom Casmurro', 'Machado de Assis', 'Editora Saraiva', 1899, true);
-insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(2, 'Harry Potter', 'JK Rolling', 'Editora Livro', 2011, false);
-insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(3, 'Diario Indestrutivel', 'Agata Runin', 'Studio Par', 2021, true);
-insert into book (id, titulo, autor, editora, anoLancamento, estaDisponivel) values(4, 'Capitao America', 'Stuart Rom', 'Marvel', 1999, false);
-
 insert into BiografiaDiretor (textoCompleto, resumo, premiosRecebidos) values(
     'Hayao Miyazaki é co-fundador do Studio Ghibli e um dos mais influentes diretores de animação da história. Nascido em Tóquio, começou sua carreira na Toei Animation em 1963. Suas obras são conhecidas pela rica narrativa visual, temas ambientais, pacifismo e personagens femininas fortes. Fundou o Studio Ghibli em 1985 junto com Isao Takahata.',
     'Co-fundador do Studio Ghibli, mestre da animação japonesa',

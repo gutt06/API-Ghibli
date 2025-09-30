@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 @Path("/filmes")
+@Timeout(30000)
 public class FilmeResource {
 
     @GET
@@ -40,6 +42,7 @@ public class FilmeResource {
 
     @GET
     @Path("{id}")
+    @Timeout(25000)
     @Operation(
         summary = "Retorna um filme pela busca por ID (getById)",
         description = "Retorna um filme específico pela busca de ID colocado na URL no formato JSON por padrão"
@@ -83,6 +86,7 @@ public class FilmeResource {
             )
     )
     @Path("/search")
+    @Timeout(15000)
     public Response search(
             @Parameter(description = "Query de buscar por titulo, ano de lançamento ou idade indicativa")
             @QueryParam("q") String q,
@@ -146,6 +150,7 @@ public class FilmeResource {
     }
 
     @POST
+    @Timeout(10000)
     @Operation(
             summary = "Adiciona um registro a lista de filmes (insert)",
             description = "Adiciona um item a lista de filmes por meio de POST e request body JSON"
@@ -230,6 +235,7 @@ public class FilmeResource {
     )
     @Transactional
     @Path("{id}")
+    @Timeout(10000)
     public Response delete(@PathParam("id") long id){
         Filme entity = Filme.findById(id);
         if(entity == null){
@@ -273,6 +279,7 @@ public class FilmeResource {
     )
     @Transactional
     @Path("{id}")
+    @Timeout(20000)
     public Response update(@PathParam("id") long id,@Valid Filme newFilme){
         Filme entity = Filme.findById(id);
         if(entity == null){

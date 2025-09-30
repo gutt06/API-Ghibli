@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 @Path("/diretores")
+@Timeout(30000)
 public class DiretorResource {
     @GET
     @Operation(
@@ -38,6 +40,7 @@ public class DiretorResource {
 
     @GET
     @Path("{id}")
+    @Timeout(25000)
     @Operation(
             summary = "Retorna um diretor pela busca por ID (getById)",
             description = "Retorna um diretor específico pela busca de ID colocado na URL no formato JSON por padrão"
@@ -81,6 +84,7 @@ public class DiretorResource {
             )
     )
     @Path("/search")
+    @Timeout(15000)
     public Response search(
             @Parameter(description = "Query de buscar por nome ou nacionalidade")
             @QueryParam("q") String q,
@@ -127,6 +131,7 @@ public class DiretorResource {
     }
 
     @POST
+    @Timeout(10000)
     @Operation(
             summary = "Adiciona um registro a lista de diretores (insert)",
             description = "Adiciona um item a lista de diretores por meio de POST e request body JSON"
@@ -186,6 +191,7 @@ public class DiretorResource {
     )
     @Transactional
     @Path("{id}")
+    @Timeout(10000)
     public Response delete(@PathParam("id") long id){
         Diretor entity = Diretor.findById(id);
         if(entity == null){
@@ -232,6 +238,7 @@ public class DiretorResource {
     )
     @Transactional
     @Path("{id}")
+    @Timeout(20000)
     public Response update(@PathParam("id") long id, @Valid Diretor newDiretor){
         Diretor entity = Diretor.findById(id);
         if(entity == null){

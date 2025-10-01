@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -36,13 +37,20 @@ public class FilmeResource {
                     schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
             )
     )
+    @Fallback(fallbackMethod = "getAllFallback")
     public Response getAll(){
         return Response.ok(Filme.listAll()).build();
+    }
+
+    public Response getAllFallback() {
+        String mensagem = "Servico temporariamente indisponivel para listar os filmes. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 
     @GET
     @Path("{id}")
     @Timeout(25000)
+    @Fallback(fallbackMethod = "getByIdFallback")
     @Operation(
         summary = "Retorna um filme pela busca por ID (getById)",
         description = "Retorna um filme específico pela busca de ID colocado na URL no formato JSON por padrão"
@@ -72,6 +80,11 @@ public class FilmeResource {
         return Response.ok(entity).build();
     }
 
+    public Response getByIdFallback(long id) {
+        String mensagem = "Servico temporariamente indisponivel para consulta do filme com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
+    }
+
     @GET
     @Operation(
             summary = "Retorna os filmes conforme o sistema de pesquisa (search)",
@@ -87,6 +100,7 @@ public class FilmeResource {
     )
     @Path("/search")
     @Timeout(15000)
+    @Fallback(fallbackMethod = "searchFallback")
     public Response search(
             @Parameter(description = "Query de buscar por titulo, ano de lançamento ou idade indicativa")
             @QueryParam("q") String q,
@@ -149,6 +163,11 @@ public class FilmeResource {
         return Response.ok(response).build();
     }
 
+    public Response searchFallback(String q, String sort, String direction, int page, int size) {
+        String mensagem = "Servico temporariamente indisponivel para pesquisa de filmes. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
+    }
+
     @POST
     @Timeout(10000)
     @Operation(
@@ -177,6 +196,7 @@ public class FilmeResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
+    @Fallback(fallbackMethod = "insertFallback")
     public Response insert(@Valid Filme filme){
 
         // Resolver diretor (pode ter apenas id)
@@ -214,6 +234,11 @@ public class FilmeResource {
         return Response.status(Response.Status.CREATED).build();
     }
 
+    public Response insertFallback(@Valid Filme filme) {
+        String mensagem = "Servico temporariamente indisponivel para inserir filmes. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
+    }
+
     @DELETE
     @Operation(
             summary = "Remove um registro da lista de filmes (delete)",
@@ -236,6 +261,7 @@ public class FilmeResource {
     @Transactional
     @Path("{id}")
     @Timeout(10000)
+    @Fallback(fallbackMethod = "deleteFallback")
     public Response delete(@PathParam("id") long id){
         Filme entity = Filme.findById(id);
         if(entity == null){
@@ -248,6 +274,11 @@ public class FilmeResource {
 
         Filme.deleteById(id);
         return Response.noContent().build();
+    }
+
+    public Response deleteFallback(long id) {
+        String mensagem = "Servico temporariamente indisponivel para deletar filme com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 
     @PUT
@@ -280,6 +311,7 @@ public class FilmeResource {
     @Transactional
     @Path("{id}")
     @Timeout(20000)
+    @Fallback(fallbackMethod = "updateFallback")
     public Response update(@PathParam("id") long id,@Valid Filme newFilme){
         Filme entity = Filme.findById(id);
         if(entity == null){
@@ -321,5 +353,10 @@ public class FilmeResource {
         }
 
         return Response.status(Response.Status.OK).entity(entity).build();
+    }
+
+    public Response updateFallback(long id, @Valid Filme newFilme) {
+        String mensagem = "Servico temporariamente indisponivel para atualizar filme com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 }

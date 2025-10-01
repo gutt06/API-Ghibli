@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -34,13 +35,20 @@ public class GeneroResource {
                     schema = @Schema(implementation = Genero.class, type = SchemaType.ARRAY)
             )
     )
+    @Fallback(fallbackMethod = "getAllFallback")
     public Response getAll(){
         return Response.ok(Genero.listAll()).build();
+    }
+
+    public Response getAllFallback() {
+        String mensagem = "Servico temporariamente indisponivel para listar os generos. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 
     @GET
     @Path("{id}")
     @Timeout(25000)
+    @Fallback(fallbackMethod = "getByIdFallback")
     @Operation(
             summary = "Retorna um genero pela busca por ID (getById)",
             description = "Retorna um genero específico pela busca de ID colocado na URL no formato JSON por padrão"
@@ -70,6 +78,11 @@ public class GeneroResource {
         return Response.ok(entity).build();
     }
 
+    public Response getByIdFallback(long id) {
+        String mensagem = "Servico temporariamente indisponivel para consulta do genero com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
+    }
+
     @GET
     @Operation(
             summary = "Retorna os generos conforme o sistema de pesquisa (search)",
@@ -85,6 +98,7 @@ public class GeneroResource {
     )
     @Path("/search")
     @Timeout(15000)
+    @Fallback(fallbackMethod = "searchFallback")
     public Response search(
             @Parameter(description = "Query de buscar por nome")
             @QueryParam("q") String q,
@@ -130,6 +144,11 @@ public class GeneroResource {
         return Response.ok(response).build();
     }
 
+    public Response searchFallback(String q, String sort, String direction, int page, int size) {
+        String mensagem = "Servico temporariamente indisponivel para pesquisa de generos. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
+    }
+
     @POST
     @Timeout(10000)
     @Operation(
@@ -158,9 +177,15 @@ public class GeneroResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
+    @Fallback(fallbackMethod = "insertFallback")
     public Response insert(@Valid Genero genero){
         Genero.persist(genero);
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    public Response insertFallback(@Valid Genero genero) {
+        String mensagem = "Servico temporariamente indisponivel para inserir generos. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 
     @DELETE
@@ -192,6 +217,7 @@ public class GeneroResource {
     @Transactional
     @Path("{id}")
     @Timeout(10000)
+    @Fallback(fallbackMethod = "deleteFallback")
     public Response delete(@PathParam("id") long id){
         Genero entity = Genero.findById(id);
         if(entity == null){
@@ -207,6 +233,11 @@ public class GeneroResource {
 
         Genero.deleteById(id);
         return Response.noContent().build();
+    }
+
+    public Response deleteFallback(long id) {
+        String mensagem = "Servico temporariamente indisponivel para deletar genero com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 
     @PUT
@@ -239,6 +270,7 @@ public class GeneroResource {
     @Transactional
     @Path("{id}")
     @Timeout(20000)
+    @Fallback(fallbackMethod = "updateFallback")
     public Response update(@PathParam("id") long id,@Valid Genero newGenero){
         Genero entity = Genero.findById(id);
         if(entity == null){
@@ -248,5 +280,10 @@ public class GeneroResource {
         entity.descricao = newGenero.descricao;
 
         return Response.status(Response.Status.OK).entity(entity).build();
+    }
+
+    public Response updateFallback(long id, @Valid Genero newGenero) {
+        String mensagem = "Servico temporariamente indisponivel para atualizar genero com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 }

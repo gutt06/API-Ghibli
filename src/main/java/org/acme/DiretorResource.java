@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -34,13 +35,20 @@ public class DiretorResource {
                     schema = @Schema(implementation = Diretor.class, type = SchemaType.ARRAY)
             )
     )
+    @Fallback(fallbackMethod = "getAllFallback")
     public Response getAll(){
         return Response.ok(Diretor.listAll()).build();
+    }
+
+    public Response getAllFallback() {
+        String mensagem = "Servico temporariamente indisponivel para listar os diretores. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 
     @GET
     @Path("{id}")
     @Timeout(25000)
+    @Fallback(fallbackMethod = "getByIdFallback")
     @Operation(
             summary = "Retorna um diretor pela busca por ID (getById)",
             description = "Retorna um diretor específico pela busca de ID colocado na URL no formato JSON por padrão"
@@ -70,6 +78,11 @@ public class DiretorResource {
         return Response.ok(entity).build();
     }
 
+    public Response getByIdFallback(long id) {
+        String mensagem = "Servico temporariamente indisponivel para consulta do diretor com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
+    }
+
     @GET
     @Operation(
             summary = "Retorna os diretores conforme o sistema de pesquisa (search)",
@@ -85,6 +98,7 @@ public class DiretorResource {
     )
     @Path("/search")
     @Timeout(15000)
+    @Fallback(fallbackMethod = "searchFallback")
     public Response search(
             @Parameter(description = "Query de buscar por nome ou nacionalidade")
             @QueryParam("q") String q,
@@ -130,6 +144,11 @@ public class DiretorResource {
         return Response.ok(response).build();
     }
 
+    public Response searchFallback(String q, String sort, String direction, int page, int size) {
+        String mensagem = "Servico temporariamente indisponivel para pesquisa de diretores. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
+    }
+
     @POST
     @Timeout(10000)
     @Operation(
@@ -158,9 +177,15 @@ public class DiretorResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
+    @Fallback(fallbackMethod = "insertFallback")
     public Response insert(@Valid Diretor diretor){
         Diretor.persist(diretor);
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    public Response insertFallback(@Valid Diretor diretor) {
+        String mensagem = "Servico temporariamente indisponivel para inserir diretores. Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 
     @DELETE
@@ -192,6 +217,7 @@ public class DiretorResource {
     @Transactional
     @Path("{id}")
     @Timeout(10000)
+    @Fallback(fallbackMethod = "deleteFallback")
     public Response delete(@PathParam("id") long id){
         Diretor entity = Diretor.findById(id);
         if(entity == null){
@@ -207,6 +233,11 @@ public class DiretorResource {
 
         Diretor.deleteById(id);
         return Response.noContent().build();
+    }
+
+    public Response deleteFallback(long id) {
+        String mensagem = "Servico temporariamente indisponivel para deletar diretor com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 
     @PUT
@@ -239,6 +270,7 @@ public class DiretorResource {
     @Transactional
     @Path("{id}")
     @Timeout(20000)
+    @Fallback(fallbackMethod = "updateFallback")
     public Response update(@PathParam("id") long id, @Valid Diretor newDiretor){
         Diretor entity = Diretor.findById(id);
         if(entity == null){
@@ -261,5 +293,10 @@ public class DiretorResource {
         }
 
         return Response.status(Response.Status.OK).entity(entity).build();
+    }
+
+    public Response updateFallback(long id, @Valid Diretor newDiretor) {
+        String mensagem = "Servico temporariamente indisponivel para atualizar diretor com id " + id + ". Por favor, tente novamente mais tarde.";
+        return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(mensagem).build();
     }
 }

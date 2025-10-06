@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -35,6 +36,12 @@ public class DiretorResource {
                     schema = @Schema(implementation = Diretor.class, type = SchemaType.ARRAY)
             )
     )
+    @CircuitBreaker(
+            requestVolumeThreshold = 4, // monitora as últimas 4 chamadas
+            failureRatio = 0.5,         // abre o circuito se metade falhar
+            delay = 5000,               // 5 segundos de espera
+            successThreshold = 2        // precisa de 2 sucessos seguidos para fechar
+    )
     @Fallback(fallbackMethod = "getAllFallback")
     public Response getAll(){
         return Response.ok(Diretor.listAll()).build();
@@ -48,6 +55,7 @@ public class DiretorResource {
     @GET
     @Path("{id}")
     @Timeout(25000)
+    @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.5, delay = 4000, successThreshold = 2)
     @Fallback(fallbackMethod = "getByIdFallback")
     @Operation(
             summary = "Retorna um diretor pela busca por ID (getById)",
@@ -98,6 +106,7 @@ public class DiretorResource {
     )
     @Path("/search")
     @Timeout(15000)
+    @CircuitBreaker(requestVolumeThreshold = 5, failureRatio = 0.4, delay = 4000, successThreshold = 2)
     @Fallback(fallbackMethod = "searchFallback")
     public Response search(
             @Parameter(description = "Query de buscar por nome ou nacionalidade")
@@ -151,6 +160,7 @@ public class DiretorResource {
 
     @POST
     @Timeout(10000)
+    @CircuitBreaker(requestVolumeThreshold = 5, failureRatio = 0.6, delay = 6000, successThreshold = 2)
     @Operation(
             summary = "Adiciona um registro a lista de diretores (insert)",
             description = "Adiciona um item a lista de diretores por meio de POST e request body JSON"
@@ -217,6 +227,7 @@ public class DiretorResource {
     @Transactional
     @Path("{id}")
     @Timeout(10000)
+    @CircuitBreaker(requestVolumeThreshold = 3, failureRatio = 0.5, delay = 5000, successThreshold = 2)
     @Fallback(fallbackMethod = "deleteFallback")
     public Response delete(@PathParam("id") long id){
         Diretor entity = Diretor.findById(id);
@@ -270,6 +281,7 @@ public class DiretorResource {
     @Transactional
     @Path("{id}")
     @Timeout(20000)
+    @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.5, delay = 5000, successThreshold = 2)
     @Fallback(fallbackMethod = "updateFallback")
     public Response update(@PathParam("id") long id, @Valid Diretor newDiretor){
         Diretor entity = Diretor.findById(id);

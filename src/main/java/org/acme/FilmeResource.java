@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -38,6 +39,12 @@ public class FilmeResource {
             )
     )
     @Fallback(fallbackMethod = "getAllFallback")
+    @CircuitBreaker(
+            requestVolumeThreshold = 4, // analisa as últimas 4 chamadas
+            failureRatio = 0.5,         // abre se >=50% falharem
+            delay = 5000,               // fica aberto por 5s
+            successThreshold = 1        // 1 sucesso em half-open fecha
+    )
     public Response getAll(){
         return Response.ok(Filme.listAll()).build();
     }
@@ -52,8 +59,8 @@ public class FilmeResource {
     @Timeout(25000)
     @Fallback(fallbackMethod = "getByIdFallback")
     @Operation(
-        summary = "Retorna um filme pela busca por ID (getById)",
-        description = "Retorna um filme específico pela busca de ID colocado na URL no formato JSON por padrão"
+            summary = "Retorna um filme pela busca por ID (getById)",
+            description = "Retorna um filme específico pela busca de ID colocado na URL no formato JSON por padrão"
     )
     @APIResponse(
             responseCode = "200",
@@ -69,6 +76,12 @@ public class FilmeResource {
             content = @Content(
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
+    )
+    @CircuitBreaker(
+            requestVolumeThreshold = 4,
+            failureRatio = 0.5,
+            delay = 5000,
+            successThreshold = 1
     )
     public Response getById(
             @Parameter(description = "Id do filme a ser pesquisado", required = true)
@@ -101,6 +114,12 @@ public class FilmeResource {
     @Path("/search")
     @Timeout(15000)
     @Fallback(fallbackMethod = "searchFallback")
+    @CircuitBreaker(
+            requestVolumeThreshold = 4,
+            failureRatio = 0.5,
+            delay = 5000,
+            successThreshold = 1
+    )
     public Response search(
             @Parameter(description = "Query de buscar por titulo, ano de lançamento ou idade indicativa")
             @QueryParam("q") String q,
@@ -197,6 +216,12 @@ public class FilmeResource {
     )
     @Transactional
     @Fallback(fallbackMethod = "insertFallback")
+    @CircuitBreaker(
+            requestVolumeThreshold = 3,
+            failureRatio = 0.5,
+            delay = 10000,
+            successThreshold = 1
+    )
     public Response insert(@Valid Filme filme){
 
         // Resolver diretor (pode ter apenas id)
@@ -262,6 +287,12 @@ public class FilmeResource {
     @Path("{id}")
     @Timeout(10000)
     @Fallback(fallbackMethod = "deleteFallback")
+    @CircuitBreaker(
+            requestVolumeThreshold = 3,
+            failureRatio = 0.5,
+            delay = 10000,
+            successThreshold = 1
+    )
     public Response delete(@PathParam("id") long id){
         Filme entity = Filme.findById(id);
         if(entity == null){
@@ -312,6 +343,12 @@ public class FilmeResource {
     @Path("{id}")
     @Timeout(20000)
     @Fallback(fallbackMethod = "updateFallback")
+    @CircuitBreaker(
+            requestVolumeThreshold = 3,
+            failureRatio = 0.5,
+            delay = 10000,
+            successThreshold = 1
+    )
     public Response update(@PathParam("id") long id,@Valid Filme newFilme){
         Filme entity = Filme.findById(id);
         if(entity == null){

@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -35,6 +36,7 @@ public class GeneroResource {
                     schema = @Schema(implementation = Genero.class, type = SchemaType.ARRAY)
             )
     )
+    @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.5, delay = 5000)
     @Fallback(fallbackMethod = "getAllFallback")
     public Response getAll(){
         return Response.ok(Genero.listAll()).build();
@@ -48,6 +50,7 @@ public class GeneroResource {
     @GET
     @Path("{id}")
     @Timeout(25000)
+    @CircuitBreaker(requestVolumeThreshold = 5, failureRatio = 0.4, delay = 7000)
     @Fallback(fallbackMethod = "getByIdFallback")
     @Operation(
             summary = "Retorna um genero pela busca por ID (getById)",
@@ -98,6 +101,7 @@ public class GeneroResource {
     )
     @Path("/search")
     @Timeout(15000)
+    @CircuitBreaker(requestVolumeThreshold = 6, failureRatio = 0.5, delay = 6000)
     @Fallback(fallbackMethod = "searchFallback")
     public Response search(
             @Parameter(description = "Query de buscar por nome")
@@ -151,6 +155,7 @@ public class GeneroResource {
 
     @POST
     @Timeout(10000)
+    @CircuitBreaker(requestVolumeThreshold = 3, failureRatio = 0.5, delay = 8000)
     @Operation(
             summary = "Adiciona um registro a lista de generos (insert)",
             description = "Adiciona um item a lista de generos por meio de POST e request body JSON"
@@ -217,6 +222,7 @@ public class GeneroResource {
     @Transactional
     @Path("{id}")
     @Timeout(10000)
+    @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.6, delay = 7000)
     @Fallback(fallbackMethod = "deleteFallback")
     public Response delete(@PathParam("id") long id){
         Genero entity = Genero.findById(id);
@@ -270,6 +276,7 @@ public class GeneroResource {
     @Transactional
     @Path("{id}")
     @Timeout(20000)
+    @CircuitBreaker(requestVolumeThreshold = 5, failureRatio = 0.5, delay = 6000)
     @Fallback(fallbackMethod = "updateFallback")
     public Response update(@PathParam("id") long id,@Valid Genero newGenero){
         Genero entity = Genero.findById(id);

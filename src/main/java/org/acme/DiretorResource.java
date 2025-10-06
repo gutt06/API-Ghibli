@@ -2,6 +2,7 @@ package org.acme;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
+import io.smallrye.faulttolerance.api.RateLimit;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -17,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 
@@ -42,6 +44,7 @@ public class DiretorResource {
             delay = 5000,               // 5 segundos de espera
             successThreshold = 2        // precisa de 2 sucessos seguidos para fechar
     )
+    @RateLimit(value = 10, window = 10, windowUnit = ChronoUnit.SECONDS) // 10 reqs/10s
     @Fallback(fallbackMethod = "getAllFallback")
     public Response getAll(){
         return Response.ok(Diretor.listAll()).build();
@@ -54,6 +57,7 @@ public class DiretorResource {
 
     @GET
     @Path("{id}")
+    @RateLimit(value = 8, window = 10, windowUnit = ChronoUnit.SECONDS) // 8 reqs/10s
     @Timeout(25000)
     @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.5, delay = 4000, successThreshold = 2)
     @Fallback(fallbackMethod = "getByIdFallback")
@@ -105,6 +109,7 @@ public class DiretorResource {
             )
     )
     @Path("/search")
+    @RateLimit(value = 7, window = 10, windowUnit = ChronoUnit.SECONDS) // 7 reqs/10s
     @Timeout(15000)
     @CircuitBreaker(requestVolumeThreshold = 5, failureRatio = 0.4, delay = 4000, successThreshold = 2)
     @Fallback(fallbackMethod = "searchFallback")
@@ -159,6 +164,7 @@ public class DiretorResource {
     }
 
     @POST
+    @RateLimit(value = 3, window = 10, windowUnit = ChronoUnit.SECONDS) // 3 reqs/10s
     @Timeout(10000)
     @CircuitBreaker(requestVolumeThreshold = 5, failureRatio = 0.6, delay = 6000, successThreshold = 2)
     @Operation(
@@ -226,6 +232,7 @@ public class DiretorResource {
     )
     @Transactional
     @Path("{id}")
+    @RateLimit(value = 3, window = 10, windowUnit = ChronoUnit.SECONDS) // 3 reqs/10s
     @Timeout(10000)
     @CircuitBreaker(requestVolumeThreshold = 3, failureRatio = 0.5, delay = 5000, successThreshold = 2)
     @Fallback(fallbackMethod = "deleteFallback")
@@ -280,6 +287,7 @@ public class DiretorResource {
     )
     @Transactional
     @Path("{id}")
+    @RateLimit(value = 3, window = 10, windowUnit = ChronoUnit.SECONDS) // 3 reqs/10s
     @Timeout(20000)
     @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.5, delay = 5000, successThreshold = 2)
     @Fallback(fallbackMethod = "updateFallback")

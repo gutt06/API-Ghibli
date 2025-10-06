@@ -2,6 +2,7 @@ package org.acme;
 
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
+import io.smallrye.faulttolerance.api.RateLimit;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -17,6 +18,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +40,7 @@ public class FilmeResource {
                     schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
             )
     )
+    @RateLimit(value = 10, window = 10, windowUnit = ChronoUnit.SECONDS) // 10 reqs/10s
     @Fallback(fallbackMethod = "getAllFallback")
     @CircuitBreaker(
             requestVolumeThreshold = 4, // analisa as últimas 4 chamadas
@@ -57,6 +60,7 @@ public class FilmeResource {
     @GET
     @Path("{id}")
     @Timeout(25000)
+    @RateLimit(value = 8, window = 10, windowUnit = ChronoUnit.SECONDS) // 8 reqs/10s
     @Fallback(fallbackMethod = "getByIdFallback")
     @Operation(
             summary = "Retorna um filme pela busca por ID (getById)",
@@ -113,6 +117,7 @@ public class FilmeResource {
     )
     @Path("/search")
     @Timeout(15000)
+    @RateLimit(value = 7, window = 10, windowUnit = ChronoUnit.SECONDS) // 7 reqs/10s
     @Fallback(fallbackMethod = "searchFallback")
     @CircuitBreaker(
             requestVolumeThreshold = 4,
@@ -215,6 +220,7 @@ public class FilmeResource {
                     schema = @Schema(implementation = String.class))
     )
     @Transactional
+    @RateLimit(value = 3, window = 10, windowUnit = ChronoUnit.SECONDS) // 3 reqs/10s
     @Fallback(fallbackMethod = "insertFallback")
     @CircuitBreaker(
             requestVolumeThreshold = 3,
@@ -286,6 +292,7 @@ public class FilmeResource {
     @Transactional
     @Path("{id}")
     @Timeout(10000)
+    @RateLimit(value = 3, window = 10, windowUnit = ChronoUnit.SECONDS) // 3 reqs/10s
     @Fallback(fallbackMethod = "deleteFallback")
     @CircuitBreaker(
             requestVolumeThreshold = 3,
@@ -342,6 +349,7 @@ public class FilmeResource {
     @Transactional
     @Path("{id}")
     @Timeout(20000)
+    @RateLimit(value = 3, window = 10, windowUnit = ChronoUnit.SECONDS) // 3 reqs/10s
     @Fallback(fallbackMethod = "updateFallback")
     @CircuitBreaker(
             requestVolumeThreshold = 3,

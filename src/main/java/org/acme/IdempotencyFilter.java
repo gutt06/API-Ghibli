@@ -7,6 +7,7 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 
@@ -16,7 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @Provider
-@Priority(1000)
+@Priority(2000) // Executar DEPOIS do CORS (que geralmente é 1000 ou menos)
 public class IdempotencyFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
     private static final String IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
@@ -41,12 +42,21 @@ public class IdempotencyFilter implements ContainerRequestFilter, ContainerRespo
         if (idempotencyKey != null && !idempotencyKey.isBlank()) {
             // Store the idempotency key for response filter
             requestContext.setProperty(IDEMPOTENCY_KEY_PROPERTY, idempotencyKey);
+
             // Check if we've seen this idempotency key before
             Response cachedResponse = idempotencyService.checkIdempotency(idempotencyKey);
 
             if (cachedResponse != null) {
-                // Return cached response or conflict
-                requestContext.abortWith(cachedResponse);
+                // IMPORTANTE: Adicionar headers CORS manualmente quando abortamos a requisição
+                Response responseWithCors = Response.fromResponse(cachedResponse)
+                        .header("Access-Control-Allow-Origin", "https://gutt06.github.io")
+                        .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+                        .header("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, Idempotency-Key")
+                        .header("Access-Control-Allow-Credentials", "true")
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+
+                requestContext.abortWith(responseWithCors);
                 return;
             }
 
@@ -93,7 +103,9 @@ public class IdempotencyFilter implements ContainerRequestFilter, ContainerRespo
                     try {
                         responseBody = objectMapper.writeValueAsString(entity);
                     } catch (Exception e) {
-                        responseBody = entity.toString();
+                        // Log do erro para debug
+                        System.err.println("Erro ao serializar resposta para idempotência: " + e.getMessage());
+                        responseBody = "{\"error\": \"Serialization failed\"}";
                     }
                 }
 
@@ -103,6 +115,14 @@ public class IdempotencyFilter implements ContainerRequestFilter, ContainerRespo
                 // For server errors (5xx), remove the processing mark to allow retry
                 idempotencyService.removeKey(idempotencyKey);
             }
+        }
+
+        // Garantir que os headers CORS estão sempre presentes
+        if (!responseContext.getHeaders().containsKey("Access-Control-Allow-Origin")) {
+            responseContext.getHeaders().add("Access-Control-Allow-Origin", "https://gutt06.github.io");
+            responseContext.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+            responseContext.getHeaders().add("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, Idempotency-Key");
+            responseContext.getHeaders().add("Access-Control-Allow-Credentials", "true");
         }
     }
 }

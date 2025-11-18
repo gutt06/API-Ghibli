@@ -41,6 +41,10 @@ public class FilmeResource {
                     schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
             )
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     @RateLimit(value = 10, window = 10, windowUnit = ChronoUnit.SECONDS) // 10 reqs/10s
     @Fallback(fallbackMethod = "getAllFallback")
     @CircuitBreaker(
@@ -82,6 +86,10 @@ public class FilmeResource {
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     @CircuitBreaker(
             requestVolumeThreshold = 4,
             failureRatio = 0.5,
@@ -115,6 +123,10 @@ public class FilmeResource {
                     mediaType = "application/json",
                     schema = @Schema(implementation = Filme.class, type = SchemaType.ARRAY)
             )
+    )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
     )
     @Path("/search")
     @Timeout(15000)
@@ -228,6 +240,10 @@ public class FilmeResource {
                     examples = @ExampleObject(value = "{\"error\": \"Request with this idempotency key is currently being processed\"}")
             )
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     @Transactional
     @RateLimit(value = 3, window = 10, windowUnit = ChronoUnit.SECONDS) // 3 reqs/10s
     @Fallback(fallbackMethod = "insertFallback")
@@ -298,6 +314,10 @@ public class FilmeResource {
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     @Transactional
     @Path("{id}")
     @Timeout(10000)
@@ -354,6 +374,10 @@ public class FilmeResource {
             content = @Content(
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
+    )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
     )
     @Transactional
     @Path("{id}")

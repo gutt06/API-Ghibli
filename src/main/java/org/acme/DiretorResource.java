@@ -13,6 +13,7 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
+import org.eclipse.microprofile.openapi.annotations.media.ExampleObject;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
@@ -203,6 +204,14 @@ public class DiretorResource {
             content = @Content(
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
+    )
+    @APIResponse(
+            responseCode = "409",
+            description = "Conflict - request with this Idempotency-Key is currently being processed",
+            content = @Content(
+                    mediaType = "application/json",
+                    examples = @ExampleObject(value = "{\"error\": \"Request with this idempotency key is currently being processed\"}")
+            )
     )
     @APIResponse(
             responseCode = "429",

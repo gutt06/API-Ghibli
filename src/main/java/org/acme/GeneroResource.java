@@ -38,6 +38,10 @@ public class GeneroResource {
                     schema = @Schema(implementation = Genero.class, type = SchemaType.ARRAY)
             )
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     @RateLimit(value = 10, window = 10, windowUnit = ChronoUnit.SECONDS) // 10 reqs/10s
     @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.5, delay = 5000)
     @Fallback(fallbackMethod = "getAllFallback")
@@ -75,6 +79,10 @@ public class GeneroResource {
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     public Response getById(
             @Parameter(description = "Id do genero a ser pesquisado", required = true)
             @PathParam("id") long id){
@@ -102,6 +110,10 @@ public class GeneroResource {
                     mediaType = "application/json",
                     schema = @Schema(implementation = Genero.class, type = SchemaType.ARRAY)
             )
+    )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
     )
     @Path("/search")
     @RateLimit(value = 7, window = 10, windowUnit = ChronoUnit.SECONDS) // 7 reqs/10s
@@ -187,6 +199,10 @@ public class GeneroResource {
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     @Transactional
     @Fallback(fallbackMethod = "insertFallback")
     public Response insert(@Valid Genero genero){
@@ -224,6 +240,10 @@ public class GeneroResource {
             content = @Content(
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
+    )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
     )
     @Transactional
     @Path("{id}")
@@ -279,6 +299,10 @@ public class GeneroResource {
             content = @Content(
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
+    )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
     )
     @Transactional
     @Path("{id}")

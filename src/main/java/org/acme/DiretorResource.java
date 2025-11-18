@@ -38,6 +38,10 @@ public class DiretorResource {
                     schema = @Schema(implementation = Diretor.class, type = SchemaType.ARRAY)
             )
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     @CircuitBreaker(
             requestVolumeThreshold = 4, // monitora as últimas 4 chamadas
             failureRatio = 0.5,         // abre o circuito se metade falhar
@@ -80,6 +84,10 @@ public class DiretorResource {
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     public Response getById(
             @Parameter(description = "Id do diretor a ser pesquisado", required = true)
             @PathParam("id") long id){
@@ -107,6 +115,10 @@ public class DiretorResource {
                     mediaType = "application/json",
                     schema = @Schema(implementation = Diretor.class, type = SchemaType.ARRAY)
             )
+    )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
     )
     @Path("/search")
     @RateLimit(value = 7, window = 10, windowUnit = ChronoUnit.SECONDS) // 7 reqs/10s
@@ -192,6 +204,10 @@ public class DiretorResource {
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
     )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
+    )
     @Transactional
     @Fallback(fallbackMethod = "insertFallback")
     public Response insert(@Valid Diretor diretor){
@@ -229,6 +245,10 @@ public class DiretorResource {
             content = @Content(
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
+    )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
     )
     @Transactional
     @Path("{id}")
@@ -284,6 +304,10 @@ public class DiretorResource {
             content = @Content(
                     mediaType = "text/plain",
                     schema = @Schema(implementation = String.class))
+    )
+    @APIResponse(
+            responseCode = "429",
+            description = "Too Many Requests - limite de requisições excedido"
     )
     @Transactional
     @Path("{id}")
